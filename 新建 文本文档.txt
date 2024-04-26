@@ -1,0 +1,120 @@
+
+#include <stdio.h>
+#include <conio.h>
+#include <stdlib.h>
+#include <time.h>
+
+#define WIDTH 20
+#define HEIGHT 20
+#define UP 1
+#define DOWN 2
+#define LEFT 3
+#define RIGHT 4
+#define STOP 0
+
+int snakeX[100], snakeY[100];
+int snakeLength = 3;
+int fruitX, fruitY;
+int direction;
+int gameover = 0;
+
+void setup() {
+    snakeX[0] = WIDTH / 2;
+    snakeY[0] = HEIGHT / 2;
+    fruitX = rand() % WIDTH;
+    fruitY = rand() % HEIGHT;
+    direction = STOP; // 初始方向设置为停止
+}
+
+void draw() {
+    system("cls");
+    for (int i = 0; i < HEIGHT; i++) {
+        for (int j = 0; j < WIDTH; j++) {
+            if (i == snakeY[0] && j == snakeX[0]) {
+                printf("O");
+            } else if (i == fruitY && j == fruitX) {
+                printf("*");
+            } else {
+                int isBody = 0;
+                for (int k = 1; k < snakeLength; k++) {
+                    if (i == snakeY[k] && j == snakeX[k]) {
+                        printf("o");
+                        isBody = 1;
+                        break;
+                    }
+                }
+                if (!isBody) {
+                    printf(" ");
+                }
+            }
+        }
+        printf("\n");
+    }
+}
+
+void input() {
+    if (_kbhit()) {
+        switch (_getch()) {
+            case 'w':
+                if (direction != DOWN) direction = UP;
+                break;
+            case 's':
+                if (direction != UP) direction = DOWN;
+                break;
+            case 'a':
+                if (direction != RIGHT) direction = LEFT;
+                break;
+            case 'd':
+                if (direction != LEFT) direction = RIGHT;
+                break;
+            case 'x':
+                gameover = 1;
+                break;
+        }
+    }
+}
+
+void logic() {
+    int prevX = snakeX[0];
+    int prevY = snakeY[0];
+    int prev2X, prev2Y;
+    if (direction != STOP) {
+        snakeX[0] += (direction == RIGHT) ? 1 : (direction == LEFT) ? -1 : 0;
+        snakeY[0] += (direction == DOWN) ? 1 : (direction == UP) ? -1 : 0;
+    }
+    for (int i = 1; i < snakeLength; i++) {
+        prev2X = snakeX[i];
+        prev2Y = snakeY[i];
+        snakeX[i] = prevX;
+        snakeY[i] = prevY;
+        prevX = prev2X;
+        prevY = prev2Y;
+    }
+    if (snakeX[0] == fruitX && snakeY[0] == fruitY) {
+        snakeLength++;
+        fruitX = rand() % WIDTH;
+        fruitY = rand() % HEIGHT;
+    }
+    for (int i = 1; i < snakeLength; i++) {
+        if (snakeX[0] == snakeX[i] && snakeY[0] == snakeY[i]) {
+            gameover = 1;
+        }
+    }
+    if (snakeX[0] >= WIDTH || snakeX[0] < 0 || snakeY[0] >= HEIGHT || snakeY[0] < 0) {
+        gameover = 1;
+    }
+}
+
+int main() {
+    srand(time(NULL));
+    setup();
+    while (!gameover) {
+        draw();
+        input();
+        logic();
+        // 控制游戏速度
+        for (int i = 0; i < 10000000; i++) {}
+    }
+    printf("Game Over!\n");
+    return 0;
+}
